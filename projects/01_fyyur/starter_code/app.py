@@ -2,21 +2,16 @@
 # Imports
 #----------------------------------------------------------------------------#
 
-from ast import dump
 import json
-from unittest import result
 from zoneinfo import available_timezones
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, session, url_for
+from flask import Flask, render_template, request, flash, redirect, session, url_for
 from flask_moment import Moment
-from flask_sqlalchemy import SQLAlchemy
 import logging
 from logging import Formatter, FileHandler
-from flask_wtf import FlaskForm
 from forms import *
 from flask_migrate import Migrate
-from datetime import datetime
 from models import db, Artist, Venue, Show
 
 #----------------------------------------------------------------------------#
@@ -27,9 +22,6 @@ app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
 db.init_app(app)
-# db = SQLAlchemy(app)
-
-
 
 # TODO: connect to a local postgresql database  -- done 
 migrate = Migrate(app, db)
@@ -274,7 +266,7 @@ def show_artist(artist_id):
   # TODO: replace with real artist data from the artist table, using artist_id
   artist = Artist.query.get(artist_id)
   past_shows_query = db.session.query(Show).join(Venue).filter(Show.artist_id==artist_id).filter(Show.start_time<datetime.now()).all()   
-  upcoming_shows_query = db.session.query(Show).join(Venue).filter(Show.artist_id==artist_id).filter(Show. start_time>datetime.now()).all()   
+  upcoming_shows_query = db.session.query(Show).join(Venue).filter(Show.artist_id==artist_id).filter(Show.start_time>datetime.now()).all()   
   past_shows = []
   upcoming_shows = []
   for show in past_shows_query:
@@ -366,7 +358,7 @@ def edit_artist_submission(artist_id):
   artist.state = request.form['state']
   artist.phone = request.form['phone']
   artist.facebook_link = request.form['facebook_link']
-  artist.genres = request.form['genres']
+  artist.genres = request.form.getlist('genres')
   artist.image_link = request.form['image_link']
   artist.website_link = request.form['website_link']
   try:
@@ -411,7 +403,7 @@ def edit_venue_submission(venue_id):
   venue.address = request.form['address']
   venue.phone = request.form['phone']
   venue.facebook_link = request.form['facebook_link']
-  venue.genres = request.form['genres']
+  venue.genres = request.form.getlist('genres')
   venue.image_link = request.form['image_link']
   venue.website_link = request.form['website_link']
   venue.seeking_talent = request.form['seeking_talent']
@@ -509,9 +501,9 @@ def create_shows():
 def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
   # TODO: insert form data as a new Show record in the db, instead
-  artist_id = request.form.get('artist_id', '')
-  venue_id = request.form.get('venue_id', '')
-  start_time = request.form.get('start_time','')
+  artist_id = request.form.get('artist_id')
+  venue_id = request.form.get('venue_id')
+  start_time = request.form.get('start_time')
   new_show = Show(artist_id=artist_id,
                   venue_id=venue_id,
                   start_time=start_time)
